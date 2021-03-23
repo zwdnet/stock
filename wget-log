@@ -1,0 +1,11 @@
+--2021-03-23 11:46:44--  https://link.zhihu.com/?target=https%3A//raw.githubusercontent.com/fishstar/Data-Analysis-Practice/master/sharpe_ratio/stock_data.csv
+Resolving link.zhihu.com... 103.41.167.226, 103.41.167.234, 103.41.167.235, ...
+Connecting to link.zhihu.com|103.41.167.226|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 4382 (4.3K) [text/html]
+Saving to: ‘index.html?target=https:%2F%2Fraw.githubusercontent.com%2Ffishstar%2FData-Analysis-Practice%2Fmaster%2Fsharpe_ratio%2Fstock_data.csv’
+
+        index.ht   0%[         ]       0  --.-KB/s               index.html?targe 100%[========>]   4.28K  --.-KB/s    in 0s      
+
+2021-03-23 11:47:06 (192 MB/s) - ‘index.html?target=https:%2F%2Fraw.githubusercontent.com%2Ffishstar%2FData-Analysis-Practice%2Fmaster%2Fsharpe_ratio%2Fstock_data.csv’ saved [4382/4382]
+
