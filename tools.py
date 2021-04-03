@@ -83,10 +83,13 @@ def splitData(data, features=["open", "high", "low", "close", "volume", "nextope
     
 # 策略回测类
 class BackTest:
-    def __init__(self, model, code="sh000300", start="2019-01-01", end="2019-12-31"):
+    def __init__(self, model, type="regress", preprocess=None, code="sh000300", start="2019-01-01", end="2019-12-31"):
         self.data = loadData(code=code, start=start, end=end)
         self.X, self.Y = splitData(self.data)
         self.model = model             # 模型
+        self.model_type = type       # 模型类型
+        if preprocess != None:
+            self.preprocess = preprocess # 数据预处理器
         self.stock = [0]                     # 持仓
         self.cash = [100000000]    # 现金
         self.value = []                        # 资产总额
@@ -95,8 +98,8 @@ class BackTest:
         self.modelname = str(model)[:-2] # 模型名称
         self.bk_results = pd.DataFrame()
         
-    # 进行回测
-    def run(self):
+    # 回归模型回测
+    def __regress_run(self):
         for i in range(len(self.data)):
             today_X = self.X.iloc[i, :]
             pred_Y = self.model.predict(today_X.values.reshape(1, -1))
@@ -129,6 +132,52 @@ class BackTest:
         self.evaluation()
         
         return self.bk_results
+        
+    # 分类模型回测
+    def __classify_run(self):
+        for i in range(10, len(self.data)):
+            today_X = self.X.iloc[i-10:i]
+            print("测试1", type(today_X), len)
+            feature = self.preprocess(today_X)
+            # pred_Y = self.model.predict(today_X.values.reshape(1, -1))
+            pred_Y = self.model.predict(feature.reshape(10, -1))
+            if i == 10:
+                # print("第0天")
+                amount = 0
+            elif pred_Y[0] == 1: # 全仓买入
+                # print("买")
+                money = self.cash[i - 1]
+                price = today_X.open
+                amount = math.floor(0.9*money/price)
+                # 买入操作
+                self.stock.append(self.stock[i-1] + amount)
+                self.cash.append(money - price*amount*(1.0 + self.fee_rate))
+                self.cost.append(self.cost[i-1] + price*amount*self.fee_rate)
+            elif pred_Y[0] == 0: # 清仓
+                # print("卖")
+                amount = self.stock[i-1]
+                price = today_X.open
+                self.stock.append(0)
+                money = amount*price
+                self.cash.append(money*(1.0 - self.fee_rate) + self.cash[i-1])
+                self.cost.append(self.cost[i-1] + money*self.fee_rate)
+            self.value.append(self.cash[i] + self.stock[i]*today_X.close)
+            
+        # 生成收益率数据
+        self.genReturn()
+        
+        # 计算回测指标
+        self.evaluation()
+        
+        return self.bk_results
+        
+    # 进行回测
+    def run(self):
+        if self.model_type == "regress":
+            return self.__regress_run()
+        elif self.model_type == "classify":
+            return self.__classify_run()
+        
             
     # 生成收益率数据
     def genReturn(self):
